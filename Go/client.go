@@ -2,17 +2,35 @@ package main
 
 import (
 	pb "Go/proto"
-	"golang.org/x/net/context"
+	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
-	"time"
 	// 导入grpc包
 )
 
-const (
-	defaultName = "world"
-)
+func DoubleStream(client pb.DemoEchoClient) {
+	ctx := context.Background()
+	stream, err := client.ServerClientStream(ctx)
+	if err != nil {
+		log.Fatalf("%v.ServerClientStream(_) = _, %v", client, err)
+	}
+	go func() {
+		for i := 0; i < 10; i++ {
+			err = stream.Send(&pb.DemoRequest{Message: "client server stream"})
+			if err != nil {
+				return
+			}
+		}
+	}()
+	for {
+		in, err := stream.Recv()
+		if err != nil {
+			return
+		}
+		log.Printf("Received: %v", in.Message)
+	}
+}
 
 func main() {
 	// 连接grpc服务器
@@ -29,19 +47,8 @@ func main() {
 	}(conn)
 
 	// 初始化Greeter服务客户端
-	c := pb.NewGreeterClient(conn)
-
-	// 初始化上下文，设置请求超时时间为1秒
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	// 延迟关闭请求会话
-	defer cancel()
-
-	// 调用SayHello接口，发送一条消息
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: "world"})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-
-	// 打印服务的返回的消息
-	log.Printf("Greeting: %s", r.Message)
+	c := pb.NewDemoEchoClient(conn)
+	//SimpleTest(c)
+	//ClientStreamTest(c)
+	DoubleStream(c)
 }

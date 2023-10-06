@@ -2,9 +2,11 @@ package main
 
 import (
 	pb "Go/proto"
+	context2 "context"
 	"fmt"
-	"golang.org/x/net/context"
+	"io"
 	"log"
+	"math/rand"
 	"net"
 	// 导入grpc包
 	"google.golang.org/grpc"
@@ -12,19 +14,63 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-// 定义server，用来实现proto文件，里面实现的Greeter服务里面的接口
 type server struct {
-	pb.UnimplementedGreeterServer
+	pb.DemoEchoServer
 }
 
-// SayHello 实现SayHello接口
-// 第一个参数是上下文参数，所有接口默认都要必填
-// 第二个参数是我们定义的HelloRequest消息
-// // 返回值是我们定义的HelloReply消息，error返回值也是必须的。
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	// 创建一个HelloReply消息，设置Message字段，然后直接返回。
-	fmt.Println("say" + in.Name)
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
+func (s *server) Simple(ctx context2.Context, request *pb.DemoRequest) (*pb.DemoResponse, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *server) ClientStream(streamServer pb.DemoEcho_ClientStreamServer) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *server) ServerStream(request *pb.DemoRequest, streamServer pb.DemoEcho_ServerStreamServer) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *server) ServerClientStream(streamServer pb.DemoEcho_ServerClientStreamServer) error {
+	var rate float32
+	rate = 0.3
+	go func() {
+		var cnt int32
+		cnt = 0
+		var maxCnt int32
+		maxCnt = 12
+		for {
+			if cnt >= maxCnt {
+				break
+			}
+			if rand.Float32() < rate {
+				var msg string
+				msg = fmt.Sprintf("server client stream %d", cnt)
+				err := streamServer.Send(&pb.DemoResponse{Message: msg})
+				if err != nil {
+					return
+				}
+				cnt++
+			}
+		}
+	}()
+	for {
+		in, err := streamServer.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("request receive:", in.Message)
+		err = streamServer.Send(&pb.DemoResponse{Message: "server client stream"})
+		if err != nil {
+			return err
+		}
+	}
 }
 
 func main() {
@@ -38,7 +84,7 @@ func main() {
 	s := grpc.NewServer()
 
 	// 注册Greeter服务
-	pb.RegisterGreeterServer(s, &server{})
+	pb.RegisterDemoEchoServer(s, &server{})
 
 	// 往grpc服务端注册反射服务
 	reflection.Register(s)

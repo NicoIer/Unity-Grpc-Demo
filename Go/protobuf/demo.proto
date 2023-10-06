@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "./;proto";
+
+package proto;
+
+message DemoRequest{
+  string message = 1;
+}
+
+message DemoResponse{
+  string message = 2;
+}
+
+service DemoEcho{
+  rpc Simple(DemoRequest) returns (DemoResponse){}
+  rpc ClientStream(stream DemoRequest) returns (DemoResponse){}
+  rpc ServerStream(DemoRequest) returns (stream DemoResponse){}
+  rpc ServerClientStream(stream DemoRequest) returns (stream DemoResponse){}
+}
