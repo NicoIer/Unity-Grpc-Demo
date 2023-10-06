@@ -4,6 +4,7 @@ import (
 	pb "Go/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"time"
 	// 导入grpc包
@@ -15,12 +16,17 @@ const (
 
 func main() {
 	// 连接grpc服务器
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	// 延迟关闭连接
-	defer conn.Close()
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+
+		}
+	}(conn)
 
 	// 初始化Greeter服务客户端
 	c := pb.NewGreeterClient(conn)

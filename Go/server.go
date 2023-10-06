@@ -2,6 +2,7 @@ package main
 
 import (
 	pb "Go/proto"
+	"fmt"
 	"golang.org/x/net/context"
 	"log"
 	"net"
@@ -22,6 +23,7 @@ type server struct {
 // // 返回值是我们定义的HelloReply消息，error返回值也是必须的。
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	// 创建一个HelloReply消息，设置Message字段，然后直接返回。
+	fmt.Println("say" + in.Name)
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
