@@ -1,0 +1,3 @@
+[submodule "Unity-Toolkits"]
+    path = Unity/Assets/Plugins/Unity-Toolkits/
+    url = https://github.com/NicoIer/Unity-Toolkit.git
