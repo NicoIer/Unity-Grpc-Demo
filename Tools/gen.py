@@ -19,14 +19,11 @@ def gen_csharp(protoc_path, grpc_path, proto_dir, code_gen_dir):
     def gen(dir, gen_dir):
         # 移除之前生成的代码
         if not os.path.exists(gen_dir):
-            os.mkdir(gen_dir)
+            os.makedirs(gen_dir)
 
         cmd = protoc_path + " -I=" + dir + " --csharp_out=" + gen_dir + " --grpc_out=" + gen_dir + " --plugin=protoc-gen-grpc=" + grpc_path + " " + dir + "/*.proto"
         os.system(cmd)
 
-    # 如果没有code_gen_dir则创建
-    if not os.path.exists(code_gen_dir):
-        os.mkdir(code_gen_dir)
     # 一键生成顶级目录下的proto
     gen(proto_dir, code_gen_dir)
     # 遍历proto文件夹 找到子文件夹中所有的proto文件 如果存在嵌套文件夹则递归遍历
@@ -40,9 +37,10 @@ def gen_csharp(protoc_path, grpc_path, proto_dir, code_gen_dir):
 def gen_go(protoc_path, protoc_go, grpc, proto_dir, code_gen_dir):
     def gen(dir, gen_dir):
         if not os.path.exists(gen_dir):
-            os.mkdir(gen_dir)
+            os.makedirs(gen_dir)
         cmd = protoc_path + " --go_out=" + gen_dir + " --go-grpc_out=" + gen_dir + " -I=" + dir + " " + dir + "/*.proto" + " --plugin=protoc-gen-go=" + protoc_go + " --plugin=protoc-gen-go-grpc=" + grpc
         os.system(cmd)
+
 
     gen(proto_dir, code_gen_dir)
     for root, dirs, files in os.walk(proto_dir):
@@ -80,7 +78,7 @@ if __name__ == "__main__":  # python gen.py --proto_dir=xxx --lang=xxx --gen_dir
 
     # 解析命令行参数
     parser = argparse.ArgumentParser()
-    parser.add_argument("--proto_dir", type=str, default="../protobuf")
+    parser.add_argument("--proto_dir", type=str, default=None)
     parser.add_argument("--lang", type=str, default="go")
     parser.add_argument("--gen_dir", type=str, default=None)
     args = parser.parse_args()
